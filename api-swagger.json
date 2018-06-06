@@ -1,0 +1,564 @@
+
+API Spec Converter
+
+The goal of this project is to allow REST API developers to convert between different API definition formats. This prevents lock-in, and allows developers to take advantage of tools that only support particular formats.
+
+Currently, we only support converting from various formats (e.g. RAML and WADL) to Open API 2.0 (fka Swagger). Open API 3.0 and API Blueprint are not supported in this web app, but are supported using the command line tool.
+
+Our plan is to eventually support conversion between any two formats. If you'd like to contribute, you can check out the open source library on GitHub.
+Specification URL
+Source Format
+Destination Format
+
+Converted to Open API 2.0 (Swagger).
+
+Download
+
+{
+  "info": {
+    "title": "Jerry Compare integration",
+    "description": "Single-endpoint Compare integration API",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/compare/request": {
+      "post": {
+        "summary": "Returns an object with successfulQuotes and failedQuotes arrays.",
+        "responses": {
+          "200": {
+            "description": "A JSON object of successful and failed quotes",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "successfulQuotes": {
+                  "type": "array"
+                },
+                "failedQuotes": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "description": "Quote request JSON",
+            "required": true,
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/QuoteRequest"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "swagger": "2.0",
+  "schemes": [
+    "https"
+  ],
+  "host": "stage.getjerry.com",
+  "basePath": "/",
+  "definitions": {
+    "QuoteRequest": {
+      "type": "object",
+      "required": [
+        "address",
+        "policyHolder",
+        "drivers",
+        "vehicles"
+      ],
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/Address"
+        },
+        "policyHolder": {
+          "$ref": "#/definitions/PolicyHolder"
+        },
+        "drivers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Driver"
+          }
+        },
+        "vehicles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Vehicle"
+          }
+        },
+        "currrentInsurance": {
+          "$ref": "#/definitions/CurrentInsurance"
+        },
+        "coverageItems": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/CoverageItem"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "BodilyInjury",
+                      "UninsuredMotoristBodilyInjury",
+                      "UnderinsuredMotoristBodilyInjury",
+                      "PropertyDamage",
+                      "MedicalPayments"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "Address": {
+      "type": "object",
+      "required": [
+        "street",
+        "city",
+        "state",
+        "zip"
+      ],
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "county": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        }
+      }
+    },
+    "Human": {
+      "type": "object",
+      "required": [
+        "name",
+        "gender",
+        "dateOfBirth"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string",
+          "enum": [
+            "Male",
+            "Female"
+          ]
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "maritalStatus": {
+          "type": "string",
+          "description": "default is 'Single'",
+          "enum": [
+            "Single",
+            "Married",
+            "Domestic Partner",
+            "Widowed",
+            "Separated",
+            "Divorced"
+          ]
+        },
+        "education": {
+          "type": "string",
+          "description": "education level, default is 'Associates Degree'",
+          "enum": [
+            "No High School Diploma",
+            "High School Diploma",
+            "Some College - No Degree",
+            "Vocational/Technical Degree",
+            "Associates Degree",
+            "Bachelors",
+            "Masters",
+            "Phd",
+            "Medical Degree",
+            "Law Degree"
+          ]
+        }
+      }
+    },
+    "PolicyHolder": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Human"
+        },
+        {
+          "type": "object",
+          "required": [
+            "phone",
+            "email"
+          ],
+          "properties": {
+            "phone": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "Driver": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Human"
+        },
+        {
+          "type": "object",
+          "required": [
+            "driverLicenseNumber"
+          ],
+          "properties": {
+            "driverLicenseNumber": {
+              "type": "string"
+            },
+            "ageFirstLicensed": {
+              "type": "integer"
+            },
+            "licenseStatus": {
+              "type": "string",
+              "description": "default is 'Valid'",
+              "enum": [
+                "Valid",
+                "Permit",
+                "Expired",
+                "Suspended",
+                "Cancelled",
+                "Not Licensed",
+                "Permanently Revoked"
+              ]
+            },
+            "relationToUser": {
+              "type": "string",
+              "description": "default is 'Insured'",
+              "enum": [
+                "Child",
+                "Domestic Partner",
+                "Employee",
+                "Insured",
+                "Other",
+                "Parent",
+                "Relative",
+                "Spouse"
+              ]
+            },
+            "accidents": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Accident"
+              }
+            },
+            "claims": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Claim"
+              }
+            },
+            "tickets": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Ticket"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Vehicle": {
+      "type": "object",
+      "required": [
+        "make",
+        "model",
+        "year",
+        "vin"
+      ],
+      "properties": {
+        "make": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        },
+        "vin": {
+          "type": "string"
+        },
+        "annualMileage": {
+          "type": "number",
+          "description": "default is 9000"
+        },
+        "ownership": {
+          "type": "string",
+          "description": "default is 'Owned'",
+          "enum": [
+            "Owned",
+            "Leased",
+            "Lien"
+          ]
+        },
+        "usage": {
+          "type": "string",
+          "description": "default is 'Pleasure'",
+          "enum": [
+            "Business Use",
+            "Work Commute",
+            "Farm Use",
+            "Farm Business Use",
+            "Pleasure"
+          ]
+        },
+        "coverageItems": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/CoverageItem"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "RentalReimbursement",
+                      "UninsuredMotoristPropertyDamage",
+                      "UnderinsuredMotoristPropertyDamage",
+                      "Collision",
+                      "Comprehensive",
+                      "TowingAndLabor"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "CoverageItem": {
+      "type": "object",
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "description": "split limit, ie '50/100' or single limit, ie '20000'. default is state minumum, values are adjusted to be valid for specified state"
+        }
+      }
+    },
+    "CurrentInsurance": {
+      "type": "object",
+      "properties": {
+        "bodilyInjury": {
+          "type": "string",
+          "description": "default is '100/300'"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "default is today"
+        },
+        "currentAnnualPremium": {
+          "type": "number"
+        },
+        "carrier": {
+          "type": "string",
+          "description": "default is 'Other'",
+          "enum": [
+            "21stCentury",
+            "AAA",
+            "Allstate",
+            "AmericanFamilyInsurance",
+            "BristolWest",
+            "ElephantAutoInsurance",
+            "EncompassInsuranceCompany",
+            "ErieInsurance",
+            "Esurance",
+            "FarmBureau",
+            "FarmersInsurance",
+            "Geico",
+            "KemperPreferred",
+            "KemperSpecialty",
+            "LibertyMutual",
+            "MercuryInsurance",
+            "Metlife",
+            "NationalGeneral",
+            "NationalGeneralPremier",
+            "NationalGeneralSummit",
+            "NationalGeneralValueProgram",
+            "Nationwide",
+            "Progressive",
+            "Safeco",
+            "StateFarm",
+            "TheGeneral",
+            "TheHartford",
+            "Travelers",
+            "USAA",
+            "AIG",
+            "Arrowhead",
+            "Dairyland",
+            "DairylandAutoCycle",
+            "DairylandScored",
+            "DirectGeneral",
+            "DirectGeneralAutoInsurance",
+            "Good2goAutoInsurance",
+            "PlymouthRock",
+            "SafeAuto",
+            "SafewayInsuranceGroup",
+            "WorkmensAutoInsurance",
+            "Infinity",
+            "InfinityEconomy",
+            "InfinityRSVP",
+            "InfinitySpecial",
+            "Mapfre",
+            "MapfreMass",
+            "MapfreTronweb",
+            "MapfreWA",
+            "CaliforniaCasualty",
+            "Acuity",
+            "Gainsco"
+          ]
+        }
+      }
+    },
+    "Accident": {
+      "type": "object",
+      "properties": {
+        "occurrenceDate": {
+          "type": "string",
+          "description": "date of accident occurence"
+        },
+        "type": {
+          "type": "string",
+          "description": "type of accident",
+          "enum": [
+            "At Fault With Injury",
+            "At Fault With No Injury",
+            "Not At Fault"
+          ]
+        },
+        "propertyDamage": {
+          "type": "number",
+          "description": "accident property damage"
+        }
+      }
+    },
+    "Claim": {
+      "type": "object",
+      "properties": {
+        "occurrenceDate": {
+          "type": "string",
+          "description": "date of claim occurence"
+        },
+        "type": {
+          "type": "string",
+          "description": "claim type",
+          "enum": [
+            "Fire",
+            "Hit Animal",
+            "Theft",
+            "Towing",
+            "Vandalism",
+            "Glass",
+            "Tornado/Hurricane",
+            "Flood",
+            "Wind/Hail",
+            "All Other"
+          ]
+        }
+      }
+    },
+    "Ticket": {
+      "type": "object",
+      "properties": {
+        "occurrenceDate": {
+          "type": "string",
+          "description": "date of conviction"
+        },
+        "type": {
+          "type": "string",
+          "description": "ticket type",
+          "enum": [
+            "Careless Driving",
+            "Cell Phone",
+            "Child Safety Restraint",
+            "Defective Equipment",
+            "Divided Highways",
+            "Double Lines",
+            "Driving Left of Center",
+            "Driving on Sus. License",
+            "Driving too slow",
+            "Driving without lights",
+            "DUI",
+            "Eluding Police",
+            "Failure to Obey Signal",
+            "Failure to Stop",
+            "Failure to Yield",
+            "Failure To Observe A Safety Zone",
+            "Failure to show documents",
+            "False Reporting",
+            "Felony",
+            "Following too Closely",
+            "Homicide",
+            "Illegal Turn",
+            "Improper Parking",
+            "Improper Passing",
+            "Improper Loads",
+            "Leaving scene of an Accident/Hit and Run",
+            "Motorcycle Violation",
+            "Other Major",
+            "Other Minor",
+            "Open Container",
+            "Operating Vehicle without Permission",
+            "Out of State",
+            "Passing School Bus",
+            "Racing/Drag Racing",
+            "Recreational Vehicle",
+            "Refusal to submit to chemical test",
+            "Speeding 1-5",
+            "Speeding 6-10",
+            "Speeding 11-15",
+            "Speeding 16-20",
+            "Speeding 21+",
+            "Speed over 100mph",
+            "Speeding Violation-Major",
+            "Speeding Violation-Minor",
+            "Seat Belt",
+            "Suspension",
+            "Ticket Violation Not Listed",
+            "Towing",
+            "Transportation of Hazardous Materials",
+            "Unsafe Operation of a Motor Vehicle",
+            "Vehicle Theft",
+            "Wrong Way/Wrong Lane"
+          ]
+        }
+      }
+    }
+  },
+  "x-components": {}
+}
+
